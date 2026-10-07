@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tres en Raya | Neon Deluxe Tic-Tac-Toe</title>
+  <meta name="description" content="Juego interactivo y moderno de Tres en Raya con modos 2 jugadores e IA invencible (Minimax), efectos visuales de neón y sonido nativo.">
+  
+  <!-- Favicon SVG -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230b0f19'/><path d='M25 25 L45 45 M45 25 L25 45' stroke='%2300f2fe' stroke-width='8' stroke-linecap='round'/><circle cx='70' cy='35' r='12' fill='none' stroke='%23ff007f' stroke-width='8'/><circle cx='35' cy='70' r='12' fill='none' stroke='%23ff007f' stroke-width='8'/><path d='M60 60 L80 80 M80 60 L60 80' stroke='%2300f2fe' stroke-width='8' stroke-linecap='round'/></svg>">
+  
+  <!-- Tipografía Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Canvas para partículas de confeti -->
+  <canvas id="confetti-canvas" aria-hidden="true"></canvas>
+
+  <div class="app-background-glow glow-1"></div>
+  <div class="app-background-glow glow-2"></div>
+
+  <div class="main-wrapper">
+    <!-- Encabezado -->
+    <header class="app-header">
+      <div class="badge-tag">JUEGO CLÁSICO REINVENTADO</div>
+      <h1 class="game-title">
+        <span class="text-x">TRES</span> EN <span class="text-o">RAYA</span>
+      </h1>
+      <p class="game-subtitle">Elige tu modo, desafía a la IA o juega con un amigo</p>
+    </header>
+
+    <!-- Barra de Controles y Ajustes -->
+    <section class="controls-panel card-glass" aria-label="Controles del juego">
+      <div class="control-group">
+        <label for="mode-select" class="control-label">Modo:</label>
+        <div class="custom-select-wrapper">
+          <select id="mode-select" class="custom-select" aria-label="Seleccionar modo de juego">
+            <option value="ai">🤖 Contra la IA</option>
+            <option value="pvp">👥 2 Jugadores</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="control-group" id="difficulty-group">
+        <label for="difficulty-select" class="control-label">Dificultad:</label>
+        <div class="custom-select-wrapper">
+          <select id="difficulty-select" class="custom-select" aria-label="Seleccionar dificultad de la IA">
+            <option value="hard">🔥 Imbatible (Minimax)</option>
+            <option value="normal" selected>⚡ Normal</option>
+            <option value="easy">🌱 Fácil</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="controls-actions">
+        <button id="sound-btn" class="icon-btn" title="Activar/Desactivar sonido" aria-label="Alternar sonido">
+          <span class="icon" id="sound-icon">🔊</span>
+        </button>
+        <button id="reset-score-btn" class="icon-btn" title="Reiniciar estadísticas" aria-label="Reiniciar puntuaciones">
+          <span class="icon">🏆↺</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Marcador de Puntuación -->
+    <section class="scoreboard-section" aria-label="Marcador de puntuación">
+      <div class="score-card card-glass player-x-card" id="card-player-x">
+        <div class="player-header">
+          <span class="symbol-badge symbol-badge-x">✕</span>
+          <span class="player-name" id="name-player-x">Jugador X</span>
+        </div>
+        <div class="score-number" id="score-x">0</div>
+        <div class="turn-indicator" id="indicator-x">TU TURNO</div>
+      </div>
+
+      <div class="score-card card-glass ties-card" id="card-ties">
+        <div class="player-header">
+          <span class="symbol-badge symbol-badge-tie">⚖</span>
+          <span class="player-name">Empates</span>
+        </div>
+        <div class="score-number" id="score-ties">0</div>
+        <div class="turn-indicator opacity-0">-</div>
+      </div>
+
+      <div class="score-card card-glass player-o-card" id="card-player-o">
+        <div class="player-header">
+          <span class="symbol-badge symbol-badge-o">○</span>
+          <span class="player-name" id="name-player-o">IA (O)</span>
+        </div>
+        <div class="score-number" id="score-o">0</div>
+        <div class="turn-indicator" id="indicator-o">TURNO IA</div>
+      </div>
+    </section>
+
+    <!-- Tablero de Juego -->
+    <main class="board-wrapper">
+      <div class="board-container card-glass" id="board" role="grid" aria-label="Tablero de 3 en raya">
+        <!-- Overlay SVG para trazo dinámico de línea ganadora -->
+        <svg class="win-line-svg" id="win-line-svg" aria-hidden="true">
+          <line id="win-line" x1="0" y1="0" x2="0" y2="0" />
+        </svg>
+
+        <!-- 9 Casillas del tablero -->
+        <button class="cell" data-index="0" role="gridcell" aria-label="Casilla 1" tabindex="0"></button>
+        <button class="cell" data-index="1" role="gridcell" aria-label="Casilla 2" tabindex="0"></button>
+        <button class="cell" data-index="2" role="gridcell" aria-label="Casilla 3" tabindex="0"></button>
+        <button class="cell" data-index="3" role="gridcell" aria-label="Casilla 4" tabindex="0"></button>
+        <button class="cell" data-index="4" role="gridcell" aria-label="Casilla 5" tabindex="0"></button>
+        <button class="cell" data-index="5" role="gridcell" aria-label="Casilla 6" tabindex="0"></button>
+        <button class="cell" data-index="6" role="gridcell" aria-label="Casilla 7" tabindex="0"></button>
+        <button class="cell" data-index="7" role="gridcell" aria-label="Casilla 8" tabindex="0"></button>
+        <button class="cell" data-index="8" role="gridcell" aria-label="Casilla 9" tabindex="0"></button>
+      </div>
+
+      <!-- Barra de estado y reinicio -->
+      <div class="game-status-bar">
+        <div class="status-message" id="status-message">Turno de X</div>
+        <button id="restart-btn" class="primary-action-btn">
+          <span class="btn-icon">↺</span> Nueva Ronda
+        </button>
+      </div>
+    </main>
+
+    <!-- Modal de Fin de Partida -->
+    <div class="modal-overlay" id="result-modal" aria-hidden="true" role="dialog" aria-labelledby="result-title">
+      <div class="modal-card card-glass">
+        <div class="modal-icon-badge" id="modal-icon">🎉</div>
+        <h2 class="modal-title" id="result-title">¡Victoria!</h2>
+        <p class="modal-desc" id="result-desc">El Jugador X ha ganado la partida.</p>
+        <div class="modal-actions">
+          <button id="modal-play-again-btn" class="primary-action-btn glow-btn">
+            <span>⚡ Jugar otra vez</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Desarrollado con HTML5, CSS3 Glassmorphism y JavaScript Vanilla</p>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/audio.js"></script>
+  <script src="js/confetti.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
