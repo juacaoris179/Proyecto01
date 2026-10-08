@@ -10,8 +10,8 @@
 
 window.SUPABASE_CONFIG = {
   // Ejemplo: 'https://xyzabcdefghijklmnop.supabase.co'
-  url: '',
+  url: 'https://accceddgzyfqczfeejma.supabase.co',
 
   // Ejemplo: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
-  anonKey: ''
+  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjY2NlZGRnenlmcWN6ZmVlam1hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0OTU2MzksImV4cCI6MjEwNzA3MTYzOX0.NjR8ugEHZqMy53sRFkDS4bP1M6GIUBiWmBzZuFw3YMw'
 };
