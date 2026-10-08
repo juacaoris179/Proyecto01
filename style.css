@@ -643,6 +643,342 @@ body {
   font-size: 0.95rem;
 }
 
+/* Barra de Perfil de Jugador */
+.player-profile-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius-md);
+  gap: 0.5rem;
+}
+
+.player-profile-info {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.profile-avatar {
+  font-size: 1rem;
+}
+
+.profile-label {
+  color: var(--text-muted);
+}
+
+.profile-name {
+  color: var(--neon-x);
+  font-weight: 700;
+  text-shadow: 0 0 10px var(--neon-x-glow);
+}
+
+.secondary-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  color: var(--text-muted);
+  padding: 0.3rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: var(--font-main);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.secondary-btn:hover {
+  color: var(--text-main);
+  border-color: var(--neon-x);
+  background: rgba(0, 242, 254, 0.1);
+}
+
+/* Estado de Guardado en la Nube */
+.cloud-save-status {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: -1rem;
+  margin-bottom: 1.25rem;
+}
+
+/* Modal de Clasificación Global */
+.leaderboard-modal-card {
+  max-width: 580px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1.6rem;
+  overflow: hidden;
+}
+
+.modal-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.leaderboard-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mini-badge {
+  font-size: 1.5rem;
+  margin-bottom: 0;
+  animation: none;
+}
+
+.leaderboard-modal-card .modal-title {
+  font-size: 1.35rem;
+  margin-bottom: 0;
+}
+
+.close-icon-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  color: var(--text-muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.close-icon-btn:hover {
+  color: var(--text-main);
+  border-color: var(--neon-o);
+  background: rgba(255, 0, 127, 0.15);
+}
+
+/* Banner de Estado de la Base de Datos */
+.db-status-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-sm);
+  background: rgba(10, 15, 28, 0.8);
+  border: 1px solid var(--glass-border);
+  font-size: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
+.db-status-banner.connected .status-dot {
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+.db-status-banner.disconnected .status-dot {
+  background: #f59e0b;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+}
+
+/* Formulario de Nickname */
+.nickname-form {
+  background: rgba(14, 21, 38, 0.6);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.nickname-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.nickname-input-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.custom-input {
+  flex: 1;
+  background: rgba(8, 12, 22, 0.9);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.85rem;
+  color: var(--text-main);
+  font-family: var(--font-secondary);
+  font-size: 0.85rem;
+  outline: none;
+  transition: var(--transition-smooth);
+}
+
+.custom-input:focus {
+  border-color: var(--neon-x);
+  box-shadow: 0 0 10px var(--neon-x-glow);
+}
+
+.save-nick-btn {
+  padding: 0.5rem 1.1rem;
+  font-size: 0.8rem;
+}
+
+/* Tabla del Leaderboard */
+.leaderboard-table-container {
+  flex: 1;
+  overflow-y: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  background: rgba(10, 15, 28, 0.5);
+  max-height: 320px;
+}
+
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.82rem;
+}
+
+.leaderboard-table th {
+  background: rgba(15, 23, 42, 0.95);
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  padding: 0.75rem 0.85rem;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.leaderboard-table td {
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.leaderboard-table tr:hover td {
+  background: rgba(0, 242, 254, 0.04);
+}
+
+.leaderboard-table tr.current-user td {
+  background: rgba(0, 242, 254, 0.08);
+  font-weight: 700;
+}
+
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.rank-1 { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid #fbbf24; }
+.rank-2 { background: rgba(203, 213, 225, 0.2); color: #cbd5e1; border: 1px solid #cbd5e1; }
+.rank-3 { background: rgba(217, 119, 6, 0.2); color: #d97706; border: 1px solid #d97706; }
+
+.win-rate-pill {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+/* Spinner de Carga */
+.leaderboard-loading {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(0, 242, 254, 0.15);
+  border-top-color: var(--neon-x);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 0.75rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.leaderboard-empty {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.empty-subtext {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 0.35rem;
+}
+
+/* Tarjeta Guía de Supabase */
+.supabase-guide-card {
+  padding: 1.5rem;
+  text-align: left;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: var(--radius-md);
+  margin: 1rem;
+}
+
+.supabase-guide-card h3 {
+  font-size: 1rem;
+  color: var(--neon-tie);
+  margin-bottom: 0.5rem;
+}
+
+.supabase-guide-card p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.supabase-guide-card ol {
+  font-size: 0.8rem;
+  color: var(--text-main);
+  padding-left: 1.2rem;
+  line-height: 1.7;
+}
+
+.supabase-guide-card code {
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  color: var(--neon-x);
+  font-family: monospace;
+}
+
+.guide-note {
+  margin-top: 0.75rem;
+  font-size: 0.75rem !important;
+  color: var(--neon-x) !important;
+  font-style: italic;
+}
+
 /* Footer */
 .app-footer {
   text-align: center;

@@ -57,14 +57,29 @@
       </div>
 
       <div class="controls-actions">
+        <button id="leaderboard-btn" class="icon-btn leaderboard-action-btn" title="Ver Clasificación Global (Supabase)" aria-label="Ver Clasificación Global">
+          <span class="icon">🏆</span>
+        </button>
         <button id="sound-btn" class="icon-btn" title="Activar/Desactivar sonido" aria-label="Alternar sonido">
           <span class="icon" id="sound-icon">🔊</span>
         </button>
         <button id="reset-score-btn" class="icon-btn" title="Reiniciar estadísticas" aria-label="Reiniciar puntuaciones">
-          <span class="icon">🏆↺</span>
+          <span class="icon">↺</span>
         </button>
       </div>
     </section>
+
+    <!-- Barra de Perfil de Jugador -->
+    <div class="player-profile-bar card-glass">
+      <div class="player-profile-info">
+        <span class="profile-avatar">👤</span>
+        <span class="profile-label">Tu Apodo:</span>
+        <span class="profile-name" id="current-player-nickname">Jugador X</span>
+      </div>
+      <button id="edit-nickname-btn" class="secondary-btn" title="Cambiar apodo para el ranking">
+        ✎ Editar
+      </button>
+    </div>
 
     <!-- Marcador de Puntuación -->
     <section class="scoreboard-section" aria-label="Marcador de puntuación">
@@ -131,6 +146,7 @@
         <div class="modal-icon-badge" id="modal-icon">🎉</div>
         <h2 class="modal-title" id="result-title">¡Victoria!</h2>
         <p class="modal-desc" id="result-desc">El Jugador X ha ganado la partida.</p>
+        <p class="cloud-save-status" id="cloud-save-status">💾 Guardando estadísticas...</p>
         <div class="modal-actions">
           <button id="modal-play-again-btn" class="primary-action-btn glow-btn">
             <span>⚡ Jugar otra vez</span>
@@ -139,13 +155,85 @@
       </div>
     </div>
 
+    <!-- Modal de Clasificación Global (Supabase Leaderboard) -->
+    <div class="modal-overlay" id="leaderboard-modal" aria-hidden="true" role="dialog" aria-labelledby="leaderboard-title">
+      <div class="modal-card card-glass leaderboard-modal-card">
+        <div class="modal-header-row">
+          <div class="leaderboard-title-group">
+            <span class="modal-icon-badge mini-badge">🏆</span>
+            <h2 class="modal-title" id="leaderboard-title">Clasificación Global</h2>
+          </div>
+          <button id="close-leaderboard-btn" class="close-icon-btn" aria-label="Cerrar ranking">✕</button>
+        </div>
+
+        <div class="db-status-banner" id="db-status-banner">
+          <!-- Actualizado dinámicamente por JS -->
+          <span class="status-dot"></span>
+          <span class="status-text">Comprobando conexión a Supabase...</span>
+        </div>
+
+        <!-- Editor rápido de Nickname en el modal -->
+        <form class="nickname-form" id="nickname-form">
+          <label for="nickname-input" class="nickname-label">Tu nombre en el ranking:</label>
+          <div class="nickname-input-group">
+            <input type="text" id="nickname-input" class="custom-input" maxlength="25" placeholder="Ingresa tu apodo (ej. NeonPlayer)" required>
+            <button type="submit" class="primary-action-btn save-nick-btn">Guardar</button>
+          </div>
+        </form>
+
+        <!-- Contenedor de la Tabla de Ranking -->
+        <div class="leaderboard-table-container" id="leaderboard-content">
+          <div class="leaderboard-loading" id="leaderboard-loading">
+            <div class="spinner"></div>
+            <p>Cargando clasificación en tiempo real...</p>
+          </div>
+
+          <table class="leaderboard-table" id="leaderboard-table" style="display: none;">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Jugador</th>
+                <th>Victorias</th>
+                <th>Derrotas</th>
+                <th>Racha Máx</th>
+                <th>% Victoria</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-tbody">
+              <!-- Filas generadas dinámicamente -->
+            </tbody>
+          </table>
+
+          <div class="leaderboard-empty" id="leaderboard-empty" style="display: none;">
+            <p>Aún no hay partidas registradas en el ranking global.</p>
+            <p class="empty-subtext">¡Sé el primero en ganar una partida para aparecer aquí!</p>
+          </div>
+
+          <!-- Guía cuando no está conectado a Supabase -->
+          <div class="supabase-guide-card" id="supabase-guide" style="display: none;">
+            <h3>⚡ Conecta tu Base de Datos Supabase</h3>
+            <p>Para activar el ranking global en la nube:</p>
+            <ol>
+              <li>Ejecuta el script <code>supabase_schema.sql</code> en tu SQL Editor de Supabase.</li>
+              <li>Copia tu <strong>Project URL</strong> y <strong>Anon Key</strong> en <code>js/config.js</code>.</li>
+            </ol>
+            <p class="guide-note">¡Mientras tanto, tus partidas se siguen guardando localmente!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Footer -->
     <footer class="app-footer">
-      <p>Desarrollado con HTML5, CSS3 Glassmorphism y JavaScript Vanilla</p>
+      <p>Desarrollado con HTML5, CSS3 Glassmorphism, JavaScript Vanilla y Supabase</p>
     </footer>
   </div>
 
   <!-- Scripts -->
+  <!-- Supabase JS Client oficial vía CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabaseClient.js"></script>
   <script src="js/audio.js"></script>
   <script src="js/confetti.js"></script>
   <script src="js/ai.js"></script>

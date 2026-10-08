@@ -1,5 +1,6 @@
 /**
  * TicTacToe Deluxe - Controlador Principal de la Aplicación
+ * Con soporte para persistencia en Supabase y Leaderboard en la nube.
  */
 
 (function () {
@@ -19,6 +20,10 @@
   const difficultySelect = document.getElementById('difficulty-select');
   const difficultyGroup = document.getElementById('difficulty-group');
 
+  // Perfil del Jugador
+  const currentPlayerNicknameEl = document.getElementById('current-player-nickname');
+  const editNicknameBtn = document.getElementById('edit-nickname-btn');
+
   // Marcadores
   const scoreXEl = document.getElementById('score-x');
   const scoreOEl = document.getElementById('score-o');
@@ -33,7 +38,21 @@
   const modalIcon = document.getElementById('modal-icon');
   const resultTitle = document.getElementById('result-title');
   const resultDesc = document.getElementById('result-desc');
+  const cloudSaveStatus = document.getElementById('cloud-save-status');
   const modalPlayAgainBtn = document.getElementById('modal-play-again-btn');
+
+  // Modal de Clasificación Global (Leaderboard)
+  const leaderboardBtn = document.getElementById('leaderboard-btn');
+  const leaderboardModal = document.getElementById('leaderboard-modal');
+  const closeLeaderboardBtn = document.getElementById('close-leaderboard-btn');
+  const dbStatusBanner = document.getElementById('db-status-banner');
+  const nicknameForm = document.getElementById('nickname-form');
+  const nicknameInput = document.getElementById('nickname-input');
+  const leaderboardLoading = document.getElementById('leaderboard-loading');
+  const leaderboardTable = document.getElementById('leaderboard-table');
+  const leaderboardTbody = document.getElementById('leaderboard-tbody');
+  const leaderboardEmpty = document.getElementById('leaderboard-empty');
+  const supabaseGuide = document.getElementById('supabase-guide');
 
   // --- Estado del Juego ---
   const winningCombinations = [
@@ -48,6 +67,8 @@
   let isAIMoving = false;
   let currentMode = modeSelect ? modeSelect.value : 'ai';
   let currentDifficulty = difficultySelect ? difficultySelect.value : 'normal';
+  let matchStartTime = Date.now();
+  let moveCount = 0;
 
   let scores = {
     x: 0,
@@ -60,11 +81,12 @@
     loadSavedScores();
     updateScoreUI();
     updateSoundIcon();
+    initNickname();
     setupEventListeners();
     resetBoard();
   }
 
-  // Cargar y guardar puntuaciones
+  // Cargar y guardar puntuaciones locales
   function loadSavedScores() {
     try {
       const saved = localStorage.getItem('tictactoe_scores');
@@ -97,6 +119,18 @@
     }
   }
 
+  // Manejo de Nickname
+  function initNickname() {
+    const nick = (window.supabaseService && window.supabaseService.getNickname()) || 'Jugador X';
+    setNicknameUI(nick);
+  }
+
+  function setNicknameUI(nick) {
+    if (currentPlayerNicknameEl) currentPlayerNicknameEl.textContent = nick;
+    if (namePlayerX) namePlayerX.textContent = nick;
+    if (nicknameInput) nicknameInput.value = nick;
+  }
+
   // --- Configuración de Eventos ---
   function setupEventListeners() {
     // Clic en celdas
@@ -110,14 +144,14 @@
       });
     });
 
-    // Botones de acción
+    // Botones de acción del juego
     restartBtn.addEventListener('click', () => {
       if (window.soundFX) window.soundFX.playReset();
       resetBoard();
     });
 
     modalPlayAgainBtn.addEventListener('click', () => {
-      closeModal();
+      closeResultModal();
       resetBoard();
     });
 
@@ -129,13 +163,51 @@
     });
 
     resetScoreBtn.addEventListener('click', () => {
-      if (confirm('¿Deseas reiniciar todas las puntuaciones?')) {
+      if (confirm('¿Deseas reiniciar todas las puntuaciones locales?')) {
         scores = { x: 0, o: 0, ties: 0 };
         saveScores();
         updateScoreUI();
         if (window.soundFX) window.soundFX.playReset();
       }
     });
+
+    // Perfil y Nickname
+    if (editNicknameBtn) {
+      editNicknameBtn.addEventListener('click', () => {
+        openLeaderboardModal();
+        if (nicknameInput) nicknameInput.focus();
+      });
+    }
+
+    if (nicknameForm) {
+      nicknameForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const newNick = nicknameInput.value.trim();
+        if (newNick && window.supabaseService) {
+          const savedNick = window.supabaseService.setNickname(newNick);
+          setNicknameUI(savedNick);
+          alert(`¡Apodo guardado como "${savedNick}"!`);
+          loadLeaderboardData();
+        }
+      });
+    }
+
+    // Modal de Leaderboard
+    if (leaderboardBtn) {
+      leaderboardBtn.addEventListener('click', openLeaderboardModal);
+    }
+
+    if (closeLeaderboardBtn) {
+      closeLeaderboardBtn.addEventListener('click', closeLeaderboardModal);
+    }
+
+    if (leaderboardModal) {
+      leaderboardModal.addEventListener('click', (e) => {
+        if (e.target === leaderboardModal) {
+          closeLeaderboardModal();
+        }
+      });
+    }
 
     // Selector de Modo
     modeSelect.addEventListener('change', (e) => {
@@ -184,6 +256,7 @@
 
   function makeMove(index, player) {
     board[index] = player;
+    moveCount++;
     renderCell(cells[index], player);
 
     if (window.soundFX) {
@@ -227,7 +300,6 @@
     isAIMoving = true;
     statusMessage.textContent = 'IA pensando...';
 
-    // Tiempo de "pensamiento" natural y fluido para la IA
     const delay = currentDifficulty === 'hard' ? 450 : 350;
 
     setTimeout(() => {
@@ -265,6 +337,8 @@
     saveScores();
     updateScoreUI();
 
+    const durationSeconds = Math.max(1, Math.round((Date.now() - matchStartTime) / 1000));
+
     // Resaltar celdas ganadoras
     combo.forEach(idx => {
       cells[idx].classList.add('winning-cell');
@@ -278,17 +352,20 @@
     if (window.confetti) window.confetti.fire(3200);
 
     const winnerName = winner === 'X' 
-      ? 'Jugador X' 
+      ? (window.supabaseService ? window.supabaseService.getNickname() : 'Jugador X')
       : (currentMode === 'ai' ? 'la Inteligencia Artificial' : 'Jugador O');
 
     statusMessage.textContent = `¡Victoria para ${winner}!`;
 
-    // Modal con retraso suave para ver la animación
+    // Guardar partida en Supabase
+    saveMatchRecord(winner, durationSeconds, combo);
+
+    // Mostrar modal
     setTimeout(() => {
-      openModal(
+      openResultModal(
         '🏆',
         `¡Ganó ${winner}!`,
-        `¡Felicidades! ${winnerName} ha ganado la ronda.`
+        `¡Felicidades! ${winnerName} ha ganado la ronda en ${durationSeconds}s.`
       );
     }, 700);
   }
@@ -299,17 +376,49 @@
     saveScores();
     updateScoreUI();
 
+    const durationSeconds = Math.max(1, Math.round((Date.now() - matchStartTime) / 1000));
+
     if (window.soundFX) window.soundFX.playDraw();
 
     statusMessage.textContent = '¡Empate!';
 
+    // Guardar partida en Supabase
+    saveMatchRecord('tie', durationSeconds, null);
+
     setTimeout(() => {
-      openModal(
+      openResultModal(
         '🤝',
         '¡Empate!',
-        'Ningún jugador logró alinear 3 casillas. ¡Buen intento!'
+        `Tablero completo en ${durationSeconds}s. ¡Ningún jugador cedió terreno!`
       );
     }, 600);
+  }
+
+  async function saveMatchRecord(winner, durationSeconds, combo) {
+    if (!cloudSaveStatus) return;
+
+    if (window.supabaseService && window.supabaseService.isConfigured) {
+      cloudSaveStatus.textContent = '☁️ Sincronizando con Supabase...';
+      const result = await window.supabaseService.recordGame({
+        winner: winner,
+        gameMode: currentMode,
+        aiDifficulty: currentMode === 'ai' ? currentDifficulty : null,
+        totalMoves: moveCount,
+        durationSeconds: durationSeconds,
+        finalBoard: board,
+        winningLine: combo,
+        playerXName: window.supabaseService.getNickname(),
+        playerOName: currentMode === 'ai' ? `IA (${currentDifficulty})` : 'Jugador O'
+      });
+
+      if (result.success) {
+        cloudSaveStatus.textContent = '✅ Guardado en Supabase (Ranking actualizado)';
+      } else {
+        cloudSaveStatus.textContent = '⚠️ Guardado localmente (error al sincronizar nube)';
+      }
+    } else {
+      cloudSaveStatus.textContent = '💾 Guardado localmente (Supabase no configurado)';
+    }
   }
 
   // --- Trazo de la Línea Ganadora ---
@@ -371,6 +480,8 @@
     isGameActive = true;
     isAIMoving = false;
     currentPlayer = 'X';
+    matchStartTime = Date.now();
+    moveCount = 0;
 
     clearLine();
 
@@ -383,8 +494,8 @@
     updateTurnIndicator();
   }
 
-  // --- Modal ---
-  function openModal(icon, title, desc) {
+  // --- Modal de Resultado ---
+  function openResultModal(icon, title, desc) {
     modalIcon.textContent = icon;
     resultTitle.textContent = title;
     resultDesc.textContent = desc;
@@ -393,9 +504,100 @@
     modalPlayAgainBtn.focus();
   }
 
-  function closeModal() {
+  function closeResultModal() {
     resultModal.classList.remove('open');
     resultModal.setAttribute('aria-hidden', 'true');
+  }
+
+  // --- Modal de Leaderboard / Clasificación ---
+  function openLeaderboardModal() {
+    if (!leaderboardModal) return;
+    leaderboardModal.classList.add('open');
+    leaderboardModal.setAttribute('aria-hidden', 'false');
+    loadLeaderboardData();
+  }
+
+  function closeLeaderboardModal() {
+    if (!leaderboardModal) return;
+    leaderboardModal.classList.remove('open');
+    leaderboardModal.setAttribute('aria-hidden', 'true');
+  }
+
+  async function loadLeaderboardData() {
+    const isConnected = window.supabaseService && window.supabaseService.isConfigured;
+
+    if (dbStatusBanner) {
+      dbStatusBanner.className = isConnected 
+        ? 'db-status-banner connected' 
+        : 'db-status-banner disconnected';
+      
+      const statusText = dbStatusBanner.querySelector('.status-text');
+      if (statusText) {
+        statusText.textContent = isConnected
+          ? '⚡ Conectado a Supabase (Ranking en tiempo real)'
+          : '⚠️ Modo local (Supabase sin credenciales en js/config.js)';
+      }
+    }
+
+    if (!isConnected) {
+      // Mostrar la guía amigable para conectar Supabase
+      if (leaderboardLoading) leaderboardLoading.style.display = 'none';
+      if (leaderboardTable) leaderboardTable.style.display = 'none';
+      if (leaderboardEmpty) leaderboardEmpty.style.display = 'none';
+      if (supabaseGuide) supabaseGuide.style.display = 'block';
+      return;
+    }
+
+    // Si está conectado, consultar datos en Supabase
+    if (supabaseGuide) supabaseGuide.style.display = 'none';
+    if (leaderboardEmpty) leaderboardEmpty.style.display = 'none';
+    if (leaderboardTable) leaderboardTable.style.display = 'none';
+    if (leaderboardLoading) leaderboardLoading.style.display = 'block';
+
+    const result = await window.supabaseService.fetchLeaderboard();
+    leaderboardLoading.style.display = 'none';
+
+    if (result.success && result.data && result.data.length > 0) {
+      renderLeaderboardRows(result.data);
+      leaderboardTable.style.display = 'table';
+    } else {
+      leaderboardEmpty.style.display = 'block';
+    }
+  }
+
+  function renderLeaderboardRows(players) {
+    if (!leaderboardTbody) return;
+    leaderboardTbody.innerHTML = '';
+    const myNick = window.supabaseService ? window.supabaseService.getNickname() : '';
+
+    players.forEach((p, idx) => {
+      const rank = idx + 1;
+      let rankDisplay = rank;
+      if (rank === 1) rankDisplay = '<span class="rank-badge rank-1">🥇</span>';
+      else if (rank === 2) rankDisplay = '<span class="rank-badge rank-2">🥈</span>';
+      else if (rank === 3) rankDisplay = '<span class="rank-badge rank-3">🥉</span>';
+      else rankDisplay = `<span class="rank-badge">${rank}</span>`;
+
+      const isMe = p.nickname.toLowerCase() === myNick.toLowerCase();
+      const tr = document.createElement('tr');
+      if (isMe) tr.className = 'current-user';
+
+      tr.innerHTML = `
+        <td>${rankDisplay}</td>
+        <td>${escapeHtml(p.nickname)} ${isMe ? '(Tú)' : ''}</td>
+        <td><strong>${p.wins || 0}</strong></td>
+        <td>${p.losses || 0}</td>
+        <td>${p.max_streak || 0}</td>
+        <td><span class="win-rate-pill">${p.win_rate_percentage || 0}%</span></td>
+      `;
+      leaderboardTbody.appendChild(tr);
+    });
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str || '';
+    return div.innerHTML;
   }
 
   // Inicializar al cargar el DOM
